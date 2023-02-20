@@ -51,6 +51,9 @@ double kBarMaxWidth = 480.0;
 double kBarHeight = 32.0;
 
 bool kIsPlaying = false;
-bool kIsComoputing = false;
+bool kIsComputing = false;
 
 late OrderbookModel kOrderbookModel;
+
+// update duration in ms (milliseconds)
+int kDuration = 100;

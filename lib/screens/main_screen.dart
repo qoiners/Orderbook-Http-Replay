@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -17,6 +18,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   late final TextEditingController tickerController;
   late final TextEditingController timestampController;
+  late final ScrollController scrollController;
+  late Timer timer;
 
   @override
   void initState() {
@@ -57,6 +60,15 @@ class _MainScreenState extends State<MainScreen> {
     tickerController = TextEditingController(text: kTicker);
     timestampController =
         TextEditingController(text: kTimestamps[kCurrentIndex].toString());
+
+    scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    timer.cancel();
+    super.dispose();
   }
 
   @override
@@ -65,284 +77,324 @@ class _MainScreenState extends State<MainScreen> {
       body: DefaultTextStyle(
         style: const TextStyle(color: Colors.black, fontSize: 15),
         child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 32),
-                Text(
-                  '현재 시간: ${DateTime.fromMillisecondsSinceEpoch(kTimestamps[kCurrentIndex])} / ${kTimestamps[kCurrentIndex]}',
-                  textAlign: TextAlign.start,
-                ),
-                const SizedBox(height: 32),
-                const OrderBook(),
-                const Padding(
-                  padding: EdgeInsets.only(top: 24.0, bottom: 18.0),
-                  child: SizedBox(
-                    width: 800,
-                    child: Divider(
-                      thickness: 2.0,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 720,
-                  child: Slider(
-                    value: kCurrentIndex.toDouble(),
-                    min: 0,
-                    max: (kTimestamps.length - 1),
-                    divisions: kTimestamps.length - 1,
-                    label: getTimeFromDateTime(
-                        DateTime.fromMillisecondsSinceEpoch(
-                            kTimestamps[kCurrentIndex])),
-                    onChanged: (value) {
-                      // print(value.toInt());
-                      kCurrentIndex = value.toInt();
-                      // print(kCurrentTimestamp);
-                    },
-                  ),
-                ),
-                Row(
+          child: Scrollbar(
+            controller: scrollController,
+            child: SingleChildScrollView(
+              controller: scrollController,
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.replay_10_rounded, size: 48),
-                      onPressed: () {
-                        setState(() {
-                          kCurrentIndex =
-                              kCurrentIndex - 10 > 0 ? kCurrentIndex - 10 : 0;
-
-                          kIsPlaying = false;
-                        });
-                      },
+                    const SizedBox(height: 32),
+                    Text(
+                      '현재 시간: ${DateTime.fromMillisecondsSinceEpoch(kTimestamps[kCurrentIndex])} / ${kTimestamps[kCurrentIndex]}',
+                      textAlign: TextAlign.start,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.skip_previous_rounded, size: 48),
-                      onPressed: () {
-                        setState(() {
-                          kCurrentIndex =
-                              kCurrentIndex - 1 > 0 ? kCurrentIndex - 1 : 0;
-
-                          kIsPlaying = false;
-                        });
-                      },
+                    const SizedBox(height: 32),
+                    const OrderBook(),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 24.0, bottom: 18.0),
+                      child: SizedBox(
+                        width: 800,
+                        child: Divider(
+                          thickness: 2.0,
+                        ),
+                      ),
                     ),
-                    IconButton(
-                      icon: Icon(
-                          kIsPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          size: 48),
-                      onPressed: () async {
-                        setState(() {
-                          kIsPlaying = !kIsPlaying;
-
-                          if (!kIsComoputing) {
-                            kIsComoputing = true;
-                            compute(startLoop(), null);
+                    SizedBox(
+                      width: 720,
+                      child: Slider(
+                        value: kCurrentIndex.toDouble(),
+                        min: 0,
+                        max: (kTimestamps.length - 1),
+                        divisions: kTimestamps.length - 1,
+                        label: getTimeFromDateTime(
+                            DateTime.fromMillisecondsSinceEpoch(
+                                kTimestamps[kCurrentIndex])),
+                        onChanged: (value) {
+                          // print(value.toInt());
+                          if (kCurrentIndex != value.toInt()) {
+                            setState(() {
+                              kCurrentIndex = value.toInt();
+                            });
                           }
-                          ;
-                        });
-                      },
+                          // print(kCurrentTimestamp);
+                        },
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.skip_next_rounded, size: 48),
-                      onPressed: () {
-                        setState(() {
-                          int length = kTimestamps.length;
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.replay_10_rounded, size: 48),
+                          onPressed: () {
+                            setState(() {
+                              kCurrentIndex = kCurrentIndex - 10 > 0
+                                  ? kCurrentIndex - 10
+                                  : 0;
 
-                          kCurrentIndex = kCurrentIndex + 1 < length - 1
-                              ? kCurrentIndex + 1
-                              : length - 1;
+                              kIsPlaying = false;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon:
+                              const Icon(Icons.skip_previous_rounded, size: 48),
+                          onPressed: () {
+                            setState(() {
+                              kCurrentIndex =
+                                  kCurrentIndex - 1 > 0 ? kCurrentIndex - 1 : 0;
 
-                          kIsPlaying = false;
-                        });
-                      },
+                              kIsPlaying = false;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(
+                              kIsPlaying
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
+                              size: 48),
+                          onPressed: () async {
+                            if (!kIsPlaying) {
+                              timer = Timer.periodic(
+                                  Duration(milliseconds: kDuration), (timer) {
+                                if (kCurrentIndex == kTimestamps.length - 1) {
+                                  kCurrentIndex = 0;
+                                  timer.cancel();
+                                } else {
+                                  setState(() {
+                                    kCurrentIndex++;
+                                  });
+                                }
+                              });
+                            } else {
+                              timer.cancel();
+                            }
+
+                            setState(() {
+                              kIsPlaying = !kIsPlaying;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.skip_next_rounded, size: 48),
+                          onPressed: () {
+                            setState(() {
+                              int length = kTimestamps.length;
+
+                              kCurrentIndex = kCurrentIndex + 1 < length - 1
+                                  ? kCurrentIndex + 1
+                                  : length - 1;
+
+                              kIsPlaying = false;
+                            });
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.forward_10_rounded, size: 48),
+                          onPressed: () {
+                            setState(() {
+                              int length = kTimestamps.length;
+
+                              kCurrentIndex = kCurrentIndex + 10 < length - 1
+                                  ? kCurrentIndex + 10
+                                  : length - 1;
+
+                              kIsPlaying = false;
+                            });
+                          },
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.forward_10_rounded, size: 48),
-                      onPressed: () {
-                        setState(() {
-                          int length = kTimestamps.length;
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(width: 120, child: Text("시작시간: ")),
+                        TextButton(
+                          onPressed: () async {
+                            DateTime dateTime =
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    kFromTimestamp);
+                            Future<DateTime?> selectedDate = showDatePicker(
+                              context: context,
+                              initialDate: dateTime,
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime.now(),
+                            );
 
-                          kCurrentIndex = kCurrentIndex + 10 < length - 1
-                              ? kCurrentIndex + 10
-                              : length - 1;
+                            selectedDate.then((date) {
+                              setState(() {
+                                kFromTimestamp = DateTime(
+                                        date != null
+                                            ? date.year
+                                            : dateTime.year,
+                                        date != null
+                                            ? date.month
+                                            : dateTime.month,
+                                        date != null ? date.day : dateTime.day,
+                                        9,
+                                        0,
+                                        0)
+                                    .millisecondsSinceEpoch;
+                              });
+                            });
 
-                          kIsPlaying = false;
-                        });
-                      },
+                            // fetchTimestamps();
+                          },
+                          child: Text(
+                            getDateFromDateTime(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    kFromTimestamp)),
+                            style: const TextStyle(
+                                color: Colors.blue, fontSize: 18),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            DateTime dateTime =
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    kFromTimestamp);
+                            Future<TimeOfDay?> selectedTime = showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.fromDateTime(dateTime));
+
+                            selectedTime.then((timeOfDay) {
+                              setState(() {
+                                kFromTimestamp = DateTime(
+                                  dateTime.year,
+                                  dateTime.month,
+                                  dateTime.day,
+                                  timeOfDay != null
+                                      ? timeOfDay.hour
+                                      : dateTime.hour,
+                                  timeOfDay != null
+                                      ? timeOfDay.minute
+                                      : dateTime.minute,
+                                ).millisecondsSinceEpoch;
+                              });
+                            });
+
+                            // fetchTimestamps();
+                          },
+                          child: Text(
+                            getTimeFromDateTime(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    kFromTimestamp)),
+                            style: const TextStyle(
+                                color: Colors.blue, fontSize: 18),
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(width: 120, child: Text("종료시간: ")),
+                        TextButton(
+                          onPressed: () {
+                            DateTime dateTime =
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    kToTimestamp);
+                            Future<DateTime?> selectedDate = showDatePicker(
+                              context: context,
+                              initialDate: dateTime,
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime.now(),
+                            );
+
+                            selectedDate.then((date) {
+                              setState(() {
+                                kToTimestamp = DateTime(
+                                        date != null
+                                            ? date.year
+                                            : dateTime.year,
+                                        date != null
+                                            ? date.month
+                                            : dateTime.month,
+                                        date != null ? date.day : dateTime.day,
+                                        9,
+                                        0,
+                                        0)
+                                    .millisecondsSinceEpoch;
+                              });
+                            });
+
+                            // fetchTimestamps();
+                          },
+                          child: Text(
+                            getDateFromDateTime(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    kToTimestamp)),
+                            style: const TextStyle(
+                                color: Colors.blue, fontSize: 18),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            DateTime dateTime =
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    kToTimestamp);
+                            Future<TimeOfDay?> selectedTime = showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.fromDateTime(dateTime));
+
+                            selectedTime.then((timeOfDay) {
+                              setState(() {
+                                kToTimestamp = DateTime(
+                                  dateTime.year,
+                                  dateTime.month,
+                                  dateTime.day,
+                                  timeOfDay != null
+                                      ? timeOfDay.hour
+                                      : dateTime.hour,
+                                  timeOfDay != null
+                                      ? timeOfDay.minute
+                                      : dateTime.minute,
+                                ).millisecondsSinceEpoch;
+                              });
+                            });
+
+                            // fetchTimestamps();
+                          },
+                          child: Text(
+                            getTimeFromDateTime(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    kToTimestamp)),
+                            style: const TextStyle(
+                                color: Colors.blue, fontSize: 18),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: 240,
+                      child: TextField(
+                        controller: tickerController,
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 18),
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          label: const Text("종목 번호"),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: () {},
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
                   ],
                 ),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 120, child: Text("시작시간: ")),
-                    TextButton(
-                      onPressed: () async {
-                        DateTime dateTime =
-                            DateTime.fromMillisecondsSinceEpoch(kFromTimestamp);
-                        Future<DateTime?> selectedDate = showDatePicker(
-                          context: context,
-                          initialDate: dateTime,
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime.now(),
-                        );
-
-                        selectedDate.then((date) {
-                          setState(() {
-                            kFromTimestamp = DateTime(
-                                    date != null ? date.year : dateTime.year,
-                                    date != null ? date.month : dateTime.month,
-                                    date != null ? date.day : dateTime.day,
-                                    9,
-                                    0,
-                                    0)
-                                .millisecondsSinceEpoch;
-                          });
-                        });
-
-                        // fetchTimestamps();
-                      },
-                      child: Text(
-                        getDateFromDateTime(DateTime.fromMillisecondsSinceEpoch(
-                            kFromTimestamp)),
-                        style:
-                            const TextStyle(color: Colors.blue, fontSize: 18),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        DateTime dateTime =
-                            DateTime.fromMillisecondsSinceEpoch(kFromTimestamp);
-                        Future<TimeOfDay?> selectedTime = showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.fromDateTime(dateTime));
-
-                        selectedTime.then((timeOfDay) {
-                          setState(() {
-                            kFromTimestamp = DateTime(
-                              dateTime.year,
-                              dateTime.month,
-                              dateTime.day,
-                              timeOfDay != null
-                                  ? timeOfDay.hour
-                                  : dateTime.hour,
-                              timeOfDay != null
-                                  ? timeOfDay.minute
-                                  : dateTime.minute,
-                            ).millisecondsSinceEpoch;
-                          });
-                        });
-
-                        // fetchTimestamps();
-                      },
-                      child: Text(
-                        getTimeFromDateTime(DateTime.fromMillisecondsSinceEpoch(
-                            kFromTimestamp)),
-                        style:
-                            const TextStyle(color: Colors.blue, fontSize: 18),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 120, child: Text("종료시간: ")),
-                    TextButton(
-                      onPressed: () {
-                        DateTime dateTime =
-                            DateTime.fromMillisecondsSinceEpoch(kToTimestamp);
-                        Future<DateTime?> selectedDate = showDatePicker(
-                          context: context,
-                          initialDate: dateTime,
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime.now(),
-                        );
-
-                        selectedDate.then((date) {
-                          setState(() {
-                            kToTimestamp = DateTime(
-                                    date != null ? date.year : dateTime.year,
-                                    date != null ? date.month : dateTime.month,
-                                    date != null ? date.day : dateTime.day,
-                                    9,
-                                    0,
-                                    0)
-                                .millisecondsSinceEpoch;
-                          });
-                        });
-
-                        // fetchTimestamps();
-                      },
-                      child: Text(
-                        getDateFromDateTime(
-                            DateTime.fromMillisecondsSinceEpoch(kToTimestamp)),
-                        style:
-                            const TextStyle(color: Colors.blue, fontSize: 18),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        DateTime dateTime =
-                            DateTime.fromMillisecondsSinceEpoch(kToTimestamp);
-                        Future<TimeOfDay?> selectedTime = showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.fromDateTime(dateTime));
-
-                        selectedTime.then((timeOfDay) {
-                          setState(() {
-                            kToTimestamp = DateTime(
-                              dateTime.year,
-                              dateTime.month,
-                              dateTime.day,
-                              timeOfDay != null
-                                  ? timeOfDay.hour
-                                  : dateTime.hour,
-                              timeOfDay != null
-                                  ? timeOfDay.minute
-                                  : dateTime.minute,
-                            ).millisecondsSinceEpoch;
-                          });
-                        });
-
-                        // fetchTimestamps();
-                      },
-                      child: Text(
-                        getTimeFromDateTime(
-                            DateTime.fromMillisecondsSinceEpoch(kToTimestamp)),
-                        style:
-                            const TextStyle(color: Colors.blue, fontSize: 18),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: 240,
-                  child: TextField(
-                    controller: tickerController,
-                    style: const TextStyle(color: Colors.black, fontSize: 18),
-                    textAlign: TextAlign.center,
-                    decoration: InputDecoration(
-                      label: const Text("종목 번호"),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.send),
-                        onPressed: () {},
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ],
+              ),
             ),
           ),
         ),
