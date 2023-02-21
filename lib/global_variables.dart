@@ -1,46 +1,13 @@
 import 'package:orderbook_replay_flutter/model/orderbook_model.dart';
 
-String kTicker = '277810';
+String kTicker = '048550';
 
 int kCurrentIndex = 0;
-int kFromTimestamp = 1674691200000;
-int kToTimestamp = 1674694800000;
+int kFromTimestamp = 1676246400000;
+int kToTimestamp = 1676250000000;
 
 List<int> kTimestamps = [
   kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kFromTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
-  kToTimestamp,
   kToTimestamp,
 ];
 

@@ -20,10 +20,10 @@ String getTimeFromDateTime(DateTime dateTime) {
   return ("$hour:$minute:$second");
 }
 
-fetchHttpPost(var reqBody) async {
+fetchHttpPost(String type, var reqBody) async {
   http.Response response = await http.post(
-    Uri.parse(kUrl),
-    headers: {'Content-Type': 'application/json'},
+    Uri.parse('$kUrl/$type'),
+    // headers: {'Content-Type': 'application/json'},
     body: jsonEncode(reqBody),
   );
 
@@ -36,8 +36,7 @@ fetchHttpPost(var reqBody) async {
 }
 
 fetchTimestamps() async {
-  var resBody = await fetchHttpPost({
-    'type': 'get_timestamps',
+  var resBody = await fetchHttpPost('timestamps', {
     'ticker': kTicker,
     'from_timestamp': kFromTimestamp,
     'to_timestamp': kToTimestamp,
@@ -50,8 +49,7 @@ fetchTimestamps() async {
 }
 
 fetchOrderbook() async {
-  var resBody = await fetchHttpPost({
-    'type': 'get_orderbook',
+  var resBody = await fetchHttpPost('orderbook', {
     'ticker': kTicker,
     'timestamp': kTimestamps[kCurrentIndex],
   });
@@ -59,14 +57,15 @@ fetchOrderbook() async {
   List<int> prices = [];
   List<int> quantities = [];
 
-  for (List<int> item in resBody['orderbook']) {
-    prices.add(item[0]);
-    quantities.add(item[1]);
+  for (List<dynamic> item in resBody['orderbook']) {
+    List<int> intItem = item.cast<int>();
+    prices.add(intItem[0]);
+    quantities.add(intItem[1]);
   }
 
   kOrderbookModel = OrderbookModel(prices: prices, quantities: quantities);
 
-  kIsPlaying = false;
+  // kIsPlaying = false;
 }
 
 // https://stackoverflow.com/questions/53767950/how-to-periodically-set-state

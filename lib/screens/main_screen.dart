@@ -20,10 +20,18 @@ class _MainScreenState extends State<MainScreen> {
   late final TextEditingController timestampController;
   late final ScrollController scrollController;
   late Timer timer;
+  // late OrderBook orderBook;
 
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await fetchTimestamps();
+      await fetchOrderbook();
+      // orderBook = OrderBook();
+    });
+
     List<int> quantities = [];
     int sellSum = 0;
     int buySum = 0;
@@ -66,10 +74,34 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     timer.cancel();
     super.dispose();
   }
+
+  // setTimer() {
+  //   kIsPlaying = !kIsPlaying;
+  //   print("on timer: $kIsPlaying");
+
+  //   if (kIsPlaying) {
+  //     // setState(() {
+  //     //   // kCurrentIndex = 0;
+  //     // });
+
+  //     timer = Timer.periodic(Duration(milliseconds: kDuration), (_) async {
+  //       kCurrentIndex = (kCurrentIndex + 1) % kTimestamps.length;
+  //       await fetchOrderbook();
+  //       setState(() {});
+  //       // setState(() {
+  //       //   kCurrentIndex = (kCurrentIndex + 1) % kTimestamps.length;
+  //       //   fetchOrderbook();
+  //       // });
+  //     });
+  //   } else {
+  //     timer.cancel();
+
+  //     // setState(() {});
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +125,9 @@ class _MainScreenState extends State<MainScreen> {
                       textAlign: TextAlign.start,
                     ),
                     const SizedBox(height: 32),
-                    const OrderBook(),
+                    OrderBook(
+                      orderbookModel: kOrderbookModel,
+                    ),
                     const Padding(
                       padding: EdgeInsets.only(top: 24.0, bottom: 18.0),
                       child: SizedBox(
@@ -122,6 +156,13 @@ class _MainScreenState extends State<MainScreen> {
                           }
                           // print(kCurrentTimestamp);
                         },
+                        onChangeEnd: (value) async {
+                          kCurrentIndex = value.toInt();
+
+                          await fetchOrderbook();
+
+                          setState(() {});
+                        },
                       ),
                     ),
                     Row(
@@ -130,82 +171,110 @@ class _MainScreenState extends State<MainScreen> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.replay_10_rounded, size: 48),
-                          onPressed: () {
-                            setState(() {
-                              kCurrentIndex = kCurrentIndex - 10 > 0
-                                  ? kCurrentIndex - 10
-                                  : 0;
+                          onPressed: () async {
+                            kCurrentIndex =
+                                kCurrentIndex - 10 > 0 ? kCurrentIndex - 10 : 0;
 
-                              kIsPlaying = false;
-                            });
+                            kIsPlaying = false;
+
+                            await fetchOrderbook();
+                            setState(() {});
                           },
                         ),
                         IconButton(
                           icon:
                               const Icon(Icons.skip_previous_rounded, size: 48),
-                          onPressed: () {
-                            setState(() {
-                              kCurrentIndex =
-                                  kCurrentIndex - 1 > 0 ? kCurrentIndex - 1 : 0;
+                          onPressed: () async {
+                            kCurrentIndex =
+                                kCurrentIndex - 1 > 0 ? kCurrentIndex - 1 : 0;
 
-                              kIsPlaying = false;
-                            });
+                            kIsPlaying = false;
+
+                            await fetchOrderbook();
+                            setState(() {});
                           },
                         ),
                         IconButton(
-                          icon: Icon(
-                              kIsPlaying
-                                  ? Icons.pause_rounded
-                                  : Icons.play_arrow_rounded,
-                              size: 48),
-                          onPressed: () async {
-                            if (!kIsPlaying) {
-                              timer = Timer.periodic(
-                                  Duration(milliseconds: kDuration), (timer) {
-                                if (kCurrentIndex == kTimestamps.length - 1) {
-                                  kCurrentIndex = 0;
-                                  timer.cancel();
-                                } else {
-                                  setState(() {
-                                    kCurrentIndex++;
-                                  });
-                                }
-                              });
-                            } else {
-                              timer.cancel();
-                            }
+                            icon: Icon(
+                                kIsPlaying
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                                size: 48),
+                            // onPressed: () async {
+                            //   if (!kIsPlaying) {
+                            //     kIsPlaying = true;
 
-                            setState(() {
+                            //     if (kCurrentIndex == kTimestamps.length - 1) {
+                            //       kCurrentIndex = 0;
+                            //     }
+                            //     timer = Timer.periodic(
+                            //         Duration(milliseconds: kDuration),
+                            //         (timer) async {
+                            //       if (kCurrentIndex == kTimestamps.length - 1) {
+                            //         kCurrentIndex = 0;
+                            //         timer.cancel();
+                            //       } else {
+                            //         kCurrentIndex++;
+                            //         await fetchOrderbook();
+                            //         setState(() {});
+                            //       }
+                            //     });
+                            //   } else {
+                            //     kIsPlaying = false;
+                            //     timer.cancel();
+                            //   }
+
+                            //   setState(() {});
+                            // },
+                            onPressed: () async {
                               kIsPlaying = !kIsPlaying;
-                            });
-                          },
-                        ),
+                              if (!kIsPlaying) {
+                                print("STATE 1");
+                                timer.cancel();
+
+                                setState(() {});
+                              } else {
+                                print("STATE 2");
+                                timer = Timer.periodic(
+                                    Duration(milliseconds: kDuration),
+                                    (_) async {
+                                  kCurrentIndex =
+                                      (kCurrentIndex + 1) % kTimestamps.length;
+
+                                  await fetchOrderbook();
+
+                                  setState(() {});
+                                });
+                              }
+                            }),
                         IconButton(
                           icon: const Icon(Icons.skip_next_rounded, size: 48),
-                          onPressed: () {
-                            setState(() {
-                              int length = kTimestamps.length;
+                          onPressed: () async {
+                            int length = kTimestamps.length;
 
-                              kCurrentIndex = kCurrentIndex + 1 < length - 1
-                                  ? kCurrentIndex + 1
-                                  : length - 1;
+                            kCurrentIndex = kCurrentIndex + 1 < length - 1
+                                ? kCurrentIndex + 1
+                                : length - 1;
 
-                              kIsPlaying = false;
-                            });
+                            kIsPlaying = false;
+
+                            await fetchOrderbook();
+                            setState(() {});
                           },
                         ),
                         IconButton(
                           icon: const Icon(Icons.forward_10_rounded, size: 48),
-                          onPressed: () {
-                            setState(() {
-                              int length = kTimestamps.length;
+                          onPressed: () async {
+                            int length = kTimestamps.length;
 
-                              kCurrentIndex = kCurrentIndex + 10 < length - 1
-                                  ? kCurrentIndex + 10
-                                  : length - 1;
+                            kCurrentIndex = kCurrentIndex + 10 < length - 1
+                                ? kCurrentIndex + 10
+                                : length - 1;
 
-                              kIsPlaying = false;
-                            });
+                            kIsPlaying = false;
+
+                            await fetchOrderbook();
+                            setState(() {});
                           },
                         ),
                       ],
@@ -217,7 +286,7 @@ class _MainScreenState extends State<MainScreen> {
                       children: [
                         const SizedBox(width: 120, child: Text("시작시간: ")),
                         TextButton(
-                          onPressed: () async {
+                          onPressed: () {
                             DateTime dateTime =
                                 DateTime.fromMillisecondsSinceEpoch(
                                     kFromTimestamp);
@@ -228,7 +297,8 @@ class _MainScreenState extends State<MainScreen> {
                               lastDate: DateTime.now(),
                             );
 
-                            selectedDate.then((date) {
+                            selectedDate.then((date) async {
+                              await fetchTimestamps();
                               setState(() {
                                 kFromTimestamp = DateTime(
                                         date != null
@@ -244,8 +314,6 @@ class _MainScreenState extends State<MainScreen> {
                                     .millisecondsSinceEpoch;
                               });
                             });
-
-                            // fetchTimestamps();
                           },
                           child: Text(
                             getDateFromDateTime(
@@ -264,7 +332,8 @@ class _MainScreenState extends State<MainScreen> {
                                 context: context,
                                 initialTime: TimeOfDay.fromDateTime(dateTime));
 
-                            selectedTime.then((timeOfDay) {
+                            selectedTime.then((timeOfDay) async {
+                              await fetchTimestamps();
                               setState(() {
                                 kFromTimestamp = DateTime(
                                   dateTime.year,
@@ -279,8 +348,6 @@ class _MainScreenState extends State<MainScreen> {
                                 ).millisecondsSinceEpoch;
                               });
                             });
-
-                            // fetchTimestamps();
                           },
                           child: Text(
                             getTimeFromDateTime(
@@ -310,7 +377,8 @@ class _MainScreenState extends State<MainScreen> {
                               lastDate: DateTime.now(),
                             );
 
-                            selectedDate.then((date) {
+                            selectedDate.then((date) async {
+                              await fetchTimestamps();
                               setState(() {
                                 kToTimestamp = DateTime(
                                         date != null
@@ -326,8 +394,6 @@ class _MainScreenState extends State<MainScreen> {
                                     .millisecondsSinceEpoch;
                               });
                             });
-
-                            // fetchTimestamps();
                           },
                           child: Text(
                             getDateFromDateTime(
@@ -346,7 +412,8 @@ class _MainScreenState extends State<MainScreen> {
                                 context: context,
                                 initialTime: TimeOfDay.fromDateTime(dateTime));
 
-                            selectedTime.then((timeOfDay) {
+                            selectedTime.then((timeOfDay) async {
+                              await fetchTimestamps();
                               setState(() {
                                 kToTimestamp = DateTime(
                                   dateTime.year,
@@ -361,8 +428,6 @@ class _MainScreenState extends State<MainScreen> {
                                 ).millisecondsSinceEpoch;
                               });
                             });
-
-                            // fetchTimestamps();
                           },
                           child: Text(
                             getTimeFromDateTime(
