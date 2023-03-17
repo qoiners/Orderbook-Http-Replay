@@ -36,23 +36,29 @@ fetchHttpPost(String type, var reqBody) async {
 }
 
 fetchTimestamps() async {
+  print("FETCHING TIMESTAMPS FROM $kFromTimestamp TO $kToTimestamp");
   var resBody = await fetchHttpPost('timestamps', {
     'ticker': kTicker,
     'from_timestamp': kFromTimestamp,
     'to_timestamp': kToTimestamp,
   });
+  print(resBody);
 
-  kTimestamps = resBody['timestamps'].cast<int>();
+  if (resBody['timestamps'] != null) {
+    kTimestamps = resBody['timestamps'].cast<int>();
+  }
 
   kCurrentIndex = 0;
   kIsPlaying = false;
 }
 
 fetchOrderbook() async {
+  print("FETCHING ORDERBOOK OF ${kTimestamps[kCurrentIndex]}");
   var resBody = await fetchHttpPost('orderbook', {
     'ticker': kTicker,
     'timestamp': kTimestamps[kCurrentIndex],
   });
+  print(resBody);
 
   List<int> prices = [];
   List<int> quantities = [];

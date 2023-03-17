@@ -298,21 +298,18 @@ class _MainScreenState extends State<MainScreen> {
                             );
 
                             selectedDate.then((date) async {
+                              kFromTimestamp = DateTime(
+                                      date != null ? date.year : dateTime.year,
+                                      date != null
+                                          ? date.month
+                                          : dateTime.month,
+                                      date != null ? date.day : dateTime.day,
+                                      9,
+                                      0,
+                                      0)
+                                  .millisecondsSinceEpoch;
                               await fetchTimestamps();
-                              setState(() {
-                                kFromTimestamp = DateTime(
-                                        date != null
-                                            ? date.year
-                                            : dateTime.year,
-                                        date != null
-                                            ? date.month
-                                            : dateTime.month,
-                                        date != null ? date.day : dateTime.day,
-                                        9,
-                                        0,
-                                        0)
-                                    .millisecondsSinceEpoch;
-                              });
+                              setState(() {});
                             });
                           },
                           child: Text(
@@ -333,20 +330,19 @@ class _MainScreenState extends State<MainScreen> {
                                 initialTime: TimeOfDay.fromDateTime(dateTime));
 
                             selectedTime.then((timeOfDay) async {
+                              kFromTimestamp = DateTime(
+                                dateTime.year,
+                                dateTime.month,
+                                dateTime.day,
+                                timeOfDay != null
+                                    ? timeOfDay.hour
+                                    : dateTime.hour,
+                                timeOfDay != null
+                                    ? timeOfDay.minute
+                                    : dateTime.minute,
+                              ).millisecondsSinceEpoch;
                               await fetchTimestamps();
-                              setState(() {
-                                kFromTimestamp = DateTime(
-                                  dateTime.year,
-                                  dateTime.month,
-                                  dateTime.day,
-                                  timeOfDay != null
-                                      ? timeOfDay.hour
-                                      : dateTime.hour,
-                                  timeOfDay != null
-                                      ? timeOfDay.minute
-                                      : dateTime.minute,
-                                ).millisecondsSinceEpoch;
-                              });
+                              setState(() {});
                             });
                           },
                           child: Text(
@@ -378,21 +374,18 @@ class _MainScreenState extends State<MainScreen> {
                             );
 
                             selectedDate.then((date) async {
+                              kToTimestamp = DateTime(
+                                      date != null ? date.year : dateTime.year,
+                                      date != null
+                                          ? date.month
+                                          : dateTime.month,
+                                      date != null ? date.day : dateTime.day,
+                                      9,
+                                      0,
+                                      0)
+                                  .millisecondsSinceEpoch;
                               await fetchTimestamps();
-                              setState(() {
-                                kToTimestamp = DateTime(
-                                        date != null
-                                            ? date.year
-                                            : dateTime.year,
-                                        date != null
-                                            ? date.month
-                                            : dateTime.month,
-                                        date != null ? date.day : dateTime.day,
-                                        9,
-                                        0,
-                                        0)
-                                    .millisecondsSinceEpoch;
-                              });
+                              setState(() {});
                             });
                           },
                           child: Text(
@@ -413,20 +406,19 @@ class _MainScreenState extends State<MainScreen> {
                                 initialTime: TimeOfDay.fromDateTime(dateTime));
 
                             selectedTime.then((timeOfDay) async {
+                              kToTimestamp = DateTime(
+                                dateTime.year,
+                                dateTime.month,
+                                dateTime.day,
+                                timeOfDay != null
+                                    ? timeOfDay.hour
+                                    : dateTime.hour,
+                                timeOfDay != null
+                                    ? timeOfDay.minute
+                                    : dateTime.minute,
+                              ).millisecondsSinceEpoch;
                               await fetchTimestamps();
-                              setState(() {
-                                kToTimestamp = DateTime(
-                                  dateTime.year,
-                                  dateTime.month,
-                                  dateTime.day,
-                                  timeOfDay != null
-                                      ? timeOfDay.hour
-                                      : dateTime.hour,
-                                  timeOfDay != null
-                                      ? timeOfDay.minute
-                                      : dateTime.minute,
-                                ).millisecondsSinceEpoch;
-                              });
+                              setState(() {});
                             });
                           },
                           child: Text(
@@ -451,7 +443,10 @@ class _MainScreenState extends State<MainScreen> {
                           label: const Text("종목 번호"),
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.send),
-                            onPressed: () {},
+                            onPressed: () async {
+                              await fetchTimestamps();
+                              setState(() {});
+                            },
                           ),
                         ),
                       ),

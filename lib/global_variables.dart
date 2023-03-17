@@ -1,17 +1,17 @@
 import 'package:orderbook_replay_flutter/model/orderbook_model.dart';
 
-String kTicker = '048550';
+String kTicker = '006110';
 
 int kCurrentIndex = 0;
-int kFromTimestamp = 1676246400000;
-int kToTimestamp = 1676250000000;
+int kFromTimestamp = 1678842000000;
+int kToTimestamp = 1678845600000;
 
 List<int> kTimestamps = [
   kFromTimestamp,
   kToTimestamp,
 ];
 
-String kUrl = 'http://localhost:30001';
+String kUrl = 'http://server1.jinhoko.com:30002';
 
 int kMaxQuantity = 20000;
 double kBarMaxWidth = 480.0;

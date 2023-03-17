@@ -1,7 +1,4 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:orderbook_replay_flutter/global_variables.dart';
 import 'package:orderbook_replay_flutter/model/orderbook_model.dart';
 import 'package:orderbook_replay_flutter/widgets/orderbook_bar.dart';
 
@@ -18,12 +15,12 @@ class _OrderBookState extends State<OrderBook> {
   Widget build(BuildContext context) {
     List<Widget> children = [];
 
-    for (int i = 0; i < widget.orderbookModel.prices.length ~/ 2; i++) {
+    for (int i = widget.orderbookModel.prices.length ~/ 2 - 1; i >= 0; i--) {
       children.add(OrderbookBar(
         price: widget.orderbookModel.prices[i],
         quantity: widget.orderbookModel.quantities[i],
         isSell: true,
-        isBold: i == widget.orderbookModel.prices.length ~/ 2 - 1,
+        isBold: i == 0,
       ));
     }
 
@@ -37,14 +34,6 @@ class _OrderBookState extends State<OrderBook> {
         isBold: i == widget.orderbookModel.prices.length ~/ 2,
       ));
     }
-
-    // children.add(
-    //   Row(
-    //     children:[
-    //     Text(${}),
-    //     SizedBox()],
-    //   ),
-    // );
 
     return Column(children: children);
   }
