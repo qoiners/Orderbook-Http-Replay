@@ -176,6 +176,7 @@ class _MainScreenState extends State<MainScreen> {
                                 kCurrentIndex - 10 > 0 ? kCurrentIndex - 10 : 0;
 
                             kIsPlaying = false;
+                            timer.cancel();
 
                             await fetchOrderbook();
                             setState(() {});
@@ -189,6 +190,7 @@ class _MainScreenState extends State<MainScreen> {
                                 kCurrentIndex - 1 > 0 ? kCurrentIndex - 1 : 0;
 
                             kIsPlaying = false;
+                            timer.cancel();
 
                             await fetchOrderbook();
                             setState(() {});
@@ -257,6 +259,7 @@ class _MainScreenState extends State<MainScreen> {
                                 : length - 1;
 
                             kIsPlaying = false;
+                            timer.cancel();
 
                             await fetchOrderbook();
                             setState(() {});
@@ -272,6 +275,7 @@ class _MainScreenState extends State<MainScreen> {
                                 : length - 1;
 
                             kIsPlaying = false;
+                            timer.cancel();
 
                             await fetchOrderbook();
                             setState(() {});
