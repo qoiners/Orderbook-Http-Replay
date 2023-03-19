@@ -22,6 +22,10 @@ class _MainScreenState extends State<MainScreen> {
   late Timer timer;
   // late OrderBook orderBook;
 
+  String currentLoadedState = "Not fetched yet";
+  int bidSum = 0;
+  int askSum = 0;
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +33,7 @@ class _MainScreenState extends State<MainScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await fetchTimestamps();
       await fetchOrderbook();
+      updateSums();
       // orderBook = OrderBook();
     });
 
@@ -40,30 +45,10 @@ class _MainScreenState extends State<MainScreen> {
       quantities.add(Random().nextInt(21000) + 1000);
     }
 
-    kOrderbookModel = OrderbookModel(
-        prices: [
-          500,
-          600,
-          700,
-          800,
-          900,
-          1000,
-          1100,
-          1200,
-          1300,
-          1400,
-          1500,
-          1600,
-          1700,
-          1800,
-          1900,
-          2000,
-          2100,
-          2200,
-          2300,
-          2400,
-        ].reversed.toList(),
-        quantities: quantities);
+    timer = Timer(const Duration(milliseconds: 100), () {});
+
+    kOrderbookModel =
+        OrderbookModel(prices: [0].reversed.toList(), quantities: quantities);
 
     tickerController = TextEditingController(text: kTicker);
     timestampController =
@@ -89,11 +74,11 @@ class _MainScreenState extends State<MainScreen> {
 
   //     timer = Timer.periodic(Duration(milliseconds: kDuration), (_) async {
   //       kCurrentIndex = (kCurrentIndex + 1) % kTimestamps.length;
-  //       await fetchOrderbook();
+  //       await fetchOrderbook(); updateSums();
   //       setState(() {});
   //       // setState(() {
   //       //   kCurrentIndex = (kCurrentIndex + 1) % kTimestamps.length;
-  //       //   fetchOrderbook();
+  //       //   fetchOrderbook(); updateSums();
   //       // });
   //     });
   //   } else {
@@ -103,8 +88,23 @@ class _MainScreenState extends State<MainScreen> {
   //   }
   // }
 
+  updateSums() {
+    int length = kOrderbookModel.prices.length;
+    if (length > 1) {
+      askSum = kOrderbookModel.quantities
+          .sublist(0, length ~/ 2 - 1)
+          .reduce((a, b) => a + b);
+      bidSum = kOrderbookModel.quantities
+          .sublist(length ~/ 2, length - 1)
+          .reduce((a, b) => a + b);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (kTimestamps.length > 1) {
+      currentLoadedState = "Load success!";
+    }
     return Scaffold(
       body: DefaultTextStyle(
         style: const TextStyle(color: Colors.black, fontSize: 15),
@@ -119,10 +119,23 @@ class _MainScreenState extends State<MainScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
                     Text(
                       '현재 시간: ${DateTime.fromMillisecondsSinceEpoch(kTimestamps[kCurrentIndex])} / ${kTimestamps[kCurrentIndex]}',
                       textAlign: TextAlign.start,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 120,
+                          child: Text("매도 총량: $askSum"),
+                        ),
+                        SizedBox(
+                          width: 120,
+                          child: Text("매수 총량: $bidSum"),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 32),
                     OrderBook(
@@ -137,6 +150,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 12),
                     SizedBox(
                       width: 720,
                       child: Slider(
@@ -158,9 +172,8 @@ class _MainScreenState extends State<MainScreen> {
                         },
                         onChangeEnd: (value) async {
                           kCurrentIndex = value.toInt();
-
                           await fetchOrderbook();
-
+                          updateSums();
                           setState(() {});
                         },
                       ),
@@ -178,7 +191,10 @@ class _MainScreenState extends State<MainScreen> {
                             kIsPlaying = false;
                             timer.cancel();
 
+                            kTicker = tickerController.text;
+                            print(kTicker);
                             await fetchOrderbook();
+                            updateSums();
                             setState(() {});
                           },
                         ),
@@ -192,7 +208,10 @@ class _MainScreenState extends State<MainScreen> {
                             kIsPlaying = false;
                             timer.cancel();
 
+                            kTicker = tickerController.text;
+                            print(kTicker);
                             await fetchOrderbook();
+                            updateSums();
                             setState(() {});
                           },
                         ),
@@ -217,7 +236,7 @@ class _MainScreenState extends State<MainScreen> {
                             //         timer.cancel();
                             //       } else {
                             //         kCurrentIndex++;
-                            //         await fetchOrderbook();
+                            //         await fetchOrderbook(); updateSums();
                             //         setState(() {});
                             //       }
                             //     });
@@ -231,19 +250,16 @@ class _MainScreenState extends State<MainScreen> {
                             onPressed: () async {
                               kIsPlaying = !kIsPlaying;
                               if (!kIsPlaying) {
-                                print("STATE 1");
                                 timer.cancel();
-
                                 setState(() {});
                               } else {
-                                print("STATE 2");
                                 timer = Timer.periodic(
                                     Duration(milliseconds: kDuration),
                                     (_) async {
                                   kCurrentIndex =
                                       (kCurrentIndex + 1) % kTimestamps.length;
-
                                   await fetchOrderbook();
+                                  updateSums();
 
                                   setState(() {});
                                 });
@@ -261,7 +277,10 @@ class _MainScreenState extends State<MainScreen> {
                             kIsPlaying = false;
                             timer.cancel();
 
+                            kTicker = tickerController.text;
+                            print(kTicker);
                             await fetchOrderbook();
+                            updateSums();
                             setState(() {});
                           },
                         ),
@@ -277,7 +296,10 @@ class _MainScreenState extends State<MainScreen> {
                             kIsPlaying = false;
                             timer.cancel();
 
+                            kTicker = tickerController.text;
+                            print(kTicker);
                             await fetchOrderbook();
+                            updateSums();
                             setState(() {});
                           },
                         ),
@@ -312,7 +334,27 @@ class _MainScreenState extends State<MainScreen> {
                                       0,
                                       0)
                                   .millisecondsSinceEpoch;
+                              String oldTicker = kTicker;
+                              List<int> oldTimestamps = kTimestamps;
+                              currentLoadedState = "Fetching...";
+                              kTicker = tickerController.text;
+                              print(kTicker);
                               await fetchTimestamps();
+                              if (kTimestamps.isEmpty) {
+                                currentLoadedState =
+                                    "Fetching timestamps failed / Check parameters";
+                                kTicker = oldTicker;
+                                TextSelection oldSelection =
+                                    tickerController.selection;
+                                tickerController.value =
+                                    tickerController.value.copyWith(
+                                  selection: oldSelection,
+                                  text: oldTicker,
+                                );
+                                kTimestamps = oldTimestamps;
+                              } else {
+                                currentLoadedState = "Load success!";
+                              }
                               setState(() {});
                             });
                           },
@@ -345,7 +387,27 @@ class _MainScreenState extends State<MainScreen> {
                                     ? timeOfDay.minute
                                     : dateTime.minute,
                               ).millisecondsSinceEpoch;
+                              String oldTicker = kTicker;
+                              List<int> oldTimestamps = kTimestamps;
+                              currentLoadedState = "Fetching...";
+                              kTicker = tickerController.text;
+                              print(kTicker);
                               await fetchTimestamps();
+                              if (kTimestamps.isEmpty) {
+                                currentLoadedState =
+                                    "Fetching timestamps failed / Check parameters";
+                                kTicker = oldTicker;
+                                TextSelection oldSelection =
+                                    tickerController.selection;
+                                tickerController.value =
+                                    tickerController.value.copyWith(
+                                  selection: oldSelection,
+                                  text: oldTicker,
+                                );
+                                kTimestamps = oldTimestamps;
+                              } else {
+                                currentLoadedState = "Load success!";
+                              }
                               setState(() {});
                             });
                           },
@@ -388,7 +450,27 @@ class _MainScreenState extends State<MainScreen> {
                                       0,
                                       0)
                                   .millisecondsSinceEpoch;
+                              String oldTicker = kTicker;
+                              List<int> oldTimestamps = kTimestamps;
+                              currentLoadedState = "Fetching...";
+                              kTicker = tickerController.text;
+                              print(kTicker);
                               await fetchTimestamps();
+                              if (kTimestamps.isEmpty) {
+                                currentLoadedState =
+                                    "Fetching timestamps failed / Check parameters";
+                                kTicker = oldTicker;
+                                TextSelection oldSelection =
+                                    tickerController.selection;
+                                tickerController.value =
+                                    tickerController.value.copyWith(
+                                  selection: oldSelection,
+                                  text: oldTicker,
+                                );
+                                kTimestamps = oldTimestamps;
+                              } else {
+                                currentLoadedState = "Load success!";
+                              }
                               setState(() {});
                             });
                           },
@@ -421,7 +503,29 @@ class _MainScreenState extends State<MainScreen> {
                                     ? timeOfDay.minute
                                     : dateTime.minute,
                               ).millisecondsSinceEpoch;
+                              String oldTicker = kTicker;
+                              List<int> oldTimestamps = kTimestamps;
+                              currentLoadedState = "Fetching...";
+                              kTicker = tickerController.text;
+                              print(kTicker);
                               await fetchTimestamps();
+                              if (kTimestamps.isEmpty) {
+                                print(
+                                    "Fetching timestamps failed / Check parameters");
+                                currentLoadedState =
+                                    "Fetching timestamps failed / Check parameters";
+                                kTicker = oldTicker;
+                                TextSelection oldSelection =
+                                    tickerController.selection;
+                                tickerController.value =
+                                    tickerController.value.copyWith(
+                                  selection: oldSelection,
+                                  text: oldTicker,
+                                );
+                                kTimestamps = oldTimestamps;
+                              } else {
+                                currentLoadedState = "Load success!";
+                              }
                               setState(() {});
                             });
                           },
@@ -436,6 +540,8 @@ class _MainScreenState extends State<MainScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
+                    Text(currentLoadedState),
+                    const SizedBox(height: 12),
                     SizedBox(
                       width: 240,
                       child: TextField(
@@ -448,7 +554,29 @@ class _MainScreenState extends State<MainScreen> {
                           suffixIcon: IconButton(
                             icon: const Icon(Icons.send),
                             onPressed: () async {
+                              kIsPlaying = false;
+                              timer.cancel();
+                              String oldTicker = kTicker;
+                              List<int> oldTimestamps = kTimestamps;
+                              currentLoadedState = "Fetching...";
+                              kTicker = tickerController.text;
+                              print(kTicker);
                               await fetchTimestamps();
+                              if (kTimestamps.isEmpty) {
+                                currentLoadedState =
+                                    "Fetching timestamps failed / Check parameters";
+                                kTicker = oldTicker;
+                                TextSelection oldSelection =
+                                    tickerController.selection;
+                                tickerController.value =
+                                    tickerController.value.copyWith(
+                                  selection: oldSelection,
+                                  text: oldTicker,
+                                );
+                                kTimestamps = oldTimestamps;
+                              } else {
+                                currentLoadedState = "Load success!";
+                              }
                               setState(() {});
                             },
                           ),

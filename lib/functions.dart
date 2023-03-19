@@ -36,16 +36,19 @@ fetchHttpPost(String type, var reqBody) async {
 }
 
 fetchTimestamps() async {
-  print("FETCHING TIMESTAMPS FROM $kFromTimestamp TO $kToTimestamp");
+  print(
+      "FETCHING TIMESTAMPS FROM $kFromTimestamp TO $kToTimestamp OF $kTicker");
   var resBody = await fetchHttpPost('timestamps', {
     'ticker': kTicker,
     'from_timestamp': kFromTimestamp,
     'to_timestamp': kToTimestamp,
   });
-  print(resBody);
+  // print(resBody);
 
   if (resBody['timestamps'] != null) {
     kTimestamps = resBody['timestamps'].cast<int>();
+  } else {
+    kTimestamps = [];
   }
 
   kCurrentIndex = 0;
@@ -58,10 +61,14 @@ fetchOrderbook() async {
     'ticker': kTicker,
     'timestamp': kTimestamps[kCurrentIndex],
   });
-  print(resBody);
+  // print(resBody);
 
   List<int> prices = [];
   List<int> quantities = [];
+
+  if (resBody['orderbook'] == null) {
+    return;
+  }
 
   for (List<dynamic> item in resBody['orderbook']) {
     List<int> intItem = item.cast<int>();
