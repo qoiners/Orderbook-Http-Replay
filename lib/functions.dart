@@ -51,6 +51,7 @@ fetchTimestamps() async {
     kTimestamps = [];
   }
 
+  print(kTimestamps.length);
   kCurrentIndex = 0;
   kIsPlaying = false;
 }

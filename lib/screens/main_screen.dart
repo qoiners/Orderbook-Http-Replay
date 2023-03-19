@@ -25,6 +25,8 @@ class _MainScreenState extends State<MainScreen> {
   String currentLoadedState = "Not fetched yet";
   int bidSum = 0;
   int askSum = 0;
+  OrderbookModel defaultOrderbook =
+      OrderbookModel(prices: [0], quantities: [0]);
 
   @override
   void initState() {
@@ -38,8 +40,6 @@ class _MainScreenState extends State<MainScreen> {
     });
 
     List<int> quantities = [];
-    int sellSum = 0;
-    int buySum = 0;
 
     for (int i = 0; i < 20; i++) {
       quantities.add(Random().nextInt(21000) + 1000);
@@ -47,8 +47,10 @@ class _MainScreenState extends State<MainScreen> {
 
     timer = Timer(const Duration(milliseconds: 100), () {});
 
-    kOrderbookModel =
-        OrderbookModel(prices: [0].reversed.toList(), quantities: quantities);
+    // kOrderbookModel =
+    //     OrderbookModel(prices: [0].reversed.toList(), quantities: quantities);
+    kTimestamps = [kFromTimestamp, kToTimestamp];
+    kOrderbookModel = defaultOrderbook;
 
     tickerController = TextEditingController(text: kTicker);
     timestampController =
@@ -62,31 +64,6 @@ class _MainScreenState extends State<MainScreen> {
     timer.cancel();
     super.dispose();
   }
-
-  // setTimer() {
-  //   kIsPlaying = !kIsPlaying;
-  //   print("on timer: $kIsPlaying");
-
-  //   if (kIsPlaying) {
-  //     // setState(() {
-  //     //   // kCurrentIndex = 0;
-  //     // });
-
-  //     timer = Timer.periodic(Duration(milliseconds: kDuration), (_) async {
-  //       kCurrentIndex = (kCurrentIndex + 1) % kTimestamps.length;
-  //       await fetchOrderbook(); updateSums();
-  //       setState(() {});
-  //       // setState(() {
-  //       //   kCurrentIndex = (kCurrentIndex + 1) % kTimestamps.length;
-  //       //   fetchOrderbook(); updateSums();
-  //       // });
-  //     });
-  //   } else {
-  //     timer.cancel();
-
-  //     // setState(() {});
-  //   }
-  // }
 
   updateSums() {
     int length = kOrderbookModel.prices.length;
@@ -102,9 +79,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (kTimestamps.length > 1) {
-      currentLoadedState = "Load success!";
-    }
     return Scaffold(
       body: DefaultTextStyle(
         style: const TextStyle(color: Colors.black, fontSize: 15),
@@ -162,15 +136,23 @@ class _MainScreenState extends State<MainScreen> {
                             DateTime.fromMillisecondsSinceEpoch(
                                 kTimestamps[kCurrentIndex])),
                         onChanged: (value) {
-                          // print(value.toInt());
+                          if (currentLoadedState == "Not fetched yet" ||
+                              currentLoadedState ==
+                                  "Fetching timestamps failed / Check parameters") {
+                            return;
+                          }
                           if (kCurrentIndex != value.toInt()) {
                             setState(() {
                               kCurrentIndex = value.toInt();
                             });
                           }
-                          // print(kCurrentTimestamp);
                         },
                         onChangeEnd: (value) async {
+                          if (currentLoadedState == "Not fetched yet" ||
+                              currentLoadedState ==
+                                  "Fetching timestamps failed / Check parameters") {
+                            return;
+                          }
                           kCurrentIndex = value.toInt();
                           await fetchOrderbook();
                           updateSums();
@@ -185,6 +167,11 @@ class _MainScreenState extends State<MainScreen> {
                         IconButton(
                           icon: const Icon(Icons.replay_10_rounded, size: 48),
                           onPressed: () async {
+                            if (currentLoadedState == "Not fetched yet" ||
+                                currentLoadedState ==
+                                    "Fetching timestamps failed / Check parameters") {
+                              return;
+                            }
                             kCurrentIndex =
                                 kCurrentIndex - 10 > 0 ? kCurrentIndex - 10 : 0;
 
@@ -192,7 +179,6 @@ class _MainScreenState extends State<MainScreen> {
                             timer.cancel();
 
                             kTicker = tickerController.text;
-                            print(kTicker);
                             await fetchOrderbook();
                             updateSums();
                             setState(() {});
@@ -202,6 +188,11 @@ class _MainScreenState extends State<MainScreen> {
                           icon:
                               const Icon(Icons.skip_previous_rounded, size: 48),
                           onPressed: () async {
+                            if (currentLoadedState == "Not fetched yet" ||
+                                currentLoadedState ==
+                                    "Fetching timestamps failed / Check parameters") {
+                              return;
+                            }
                             kCurrentIndex =
                                 kCurrentIndex - 1 > 0 ? kCurrentIndex - 1 : 0;
 
@@ -221,33 +212,12 @@ class _MainScreenState extends State<MainScreen> {
                                     ? Icons.pause_rounded
                                     : Icons.play_arrow_rounded,
                                 size: 48),
-                            // onPressed: () async {
-                            //   if (!kIsPlaying) {
-                            //     kIsPlaying = true;
-
-                            //     if (kCurrentIndex == kTimestamps.length - 1) {
-                            //       kCurrentIndex = 0;
-                            //     }
-                            //     timer = Timer.periodic(
-                            //         Duration(milliseconds: kDuration),
-                            //         (timer) async {
-                            //       if (kCurrentIndex == kTimestamps.length - 1) {
-                            //         kCurrentIndex = 0;
-                            //         timer.cancel();
-                            //       } else {
-                            //         kCurrentIndex++;
-                            //         await fetchOrderbook(); updateSums();
-                            //         setState(() {});
-                            //       }
-                            //     });
-                            //   } else {
-                            //     kIsPlaying = false;
-                            //     timer.cancel();
-                            //   }
-
-                            //   setState(() {});
-                            // },
                             onPressed: () async {
+                              if (currentLoadedState == "Not fetched yet" ||
+                                  currentLoadedState ==
+                                      "Fetching timestamps failed / Check parameters") {
+                                return;
+                              }
                               kIsPlaying = !kIsPlaying;
                               if (!kIsPlaying) {
                                 timer.cancel();
@@ -268,6 +238,11 @@ class _MainScreenState extends State<MainScreen> {
                         IconButton(
                           icon: const Icon(Icons.skip_next_rounded, size: 48),
                           onPressed: () async {
+                            if (currentLoadedState == "Not fetched yet" ||
+                                currentLoadedState ==
+                                    "Fetching timestamps failed / Check parameters") {
+                              return;
+                            }
                             int length = kTimestamps.length;
 
                             kCurrentIndex = kCurrentIndex + 1 < length - 1
@@ -287,6 +262,11 @@ class _MainScreenState extends State<MainScreen> {
                         IconButton(
                           icon: const Icon(Icons.forward_10_rounded, size: 48),
                           onPressed: () async {
+                            if (currentLoadedState == "Not fetched yet" ||
+                                currentLoadedState ==
+                                    "Fetching timestamps failed / Check parameters") {
+                              return;
+                            }
                             int length = kTimestamps.length;
 
                             kCurrentIndex = kCurrentIndex + 10 < length - 1
@@ -325,36 +305,13 @@ class _MainScreenState extends State<MainScreen> {
 
                             selectedDate.then((date) async {
                               kFromTimestamp = DateTime(
-                                      date != null ? date.year : dateTime.year,
-                                      date != null
-                                          ? date.month
-                                          : dateTime.month,
-                                      date != null ? date.day : dateTime.day,
-                                      9,
-                                      0,
-                                      0)
-                                  .millisecondsSinceEpoch;
-                              String oldTicker = kTicker;
-                              List<int> oldTimestamps = kTimestamps;
-                              currentLoadedState = "Fetching...";
-                              kTicker = tickerController.text;
-                              print(kTicker);
-                              await fetchTimestamps();
-                              if (kTimestamps.isEmpty) {
-                                currentLoadedState =
-                                    "Fetching timestamps failed / Check parameters";
-                                kTicker = oldTicker;
-                                TextSelection oldSelection =
-                                    tickerController.selection;
-                                tickerController.value =
-                                    tickerController.value.copyWith(
-                                  selection: oldSelection,
-                                  text: oldTicker,
-                                );
-                                kTimestamps = oldTimestamps;
-                              } else {
-                                currentLoadedState = "Load success!";
-                              }
+                                date != null ? date.year : dateTime.year,
+                                date != null ? date.month : dateTime.month,
+                                date != null ? date.day : dateTime.day,
+                                9,
+                                0,
+                                0,
+                              ).millisecondsSinceEpoch;
                               setState(() {});
                             });
                           },
@@ -387,27 +344,6 @@ class _MainScreenState extends State<MainScreen> {
                                     ? timeOfDay.minute
                                     : dateTime.minute,
                               ).millisecondsSinceEpoch;
-                              String oldTicker = kTicker;
-                              List<int> oldTimestamps = kTimestamps;
-                              currentLoadedState = "Fetching...";
-                              kTicker = tickerController.text;
-                              print(kTicker);
-                              await fetchTimestamps();
-                              if (kTimestamps.isEmpty) {
-                                currentLoadedState =
-                                    "Fetching timestamps failed / Check parameters";
-                                kTicker = oldTicker;
-                                TextSelection oldSelection =
-                                    tickerController.selection;
-                                tickerController.value =
-                                    tickerController.value.copyWith(
-                                  selection: oldSelection,
-                                  text: oldTicker,
-                                );
-                                kTimestamps = oldTimestamps;
-                              } else {
-                                currentLoadedState = "Load success!";
-                              }
                               setState(() {});
                             });
                           },
@@ -435,42 +371,20 @@ class _MainScreenState extends State<MainScreen> {
                             Future<DateTime?> selectedDate = showDatePicker(
                               context: context,
                               initialDate: dateTime,
-                              firstDate: DateTime(2020),
+                              firstDate: DateTime.fromMillisecondsSinceEpoch(
+                                  kFromTimestamp),
                               lastDate: DateTime.now(),
                             );
 
                             selectedDate.then((date) async {
                               kToTimestamp = DateTime(
-                                      date != null ? date.year : dateTime.year,
-                                      date != null
-                                          ? date.month
-                                          : dateTime.month,
-                                      date != null ? date.day : dateTime.day,
-                                      9,
-                                      0,
-                                      0)
-                                  .millisecondsSinceEpoch;
-                              String oldTicker = kTicker;
-                              List<int> oldTimestamps = kTimestamps;
-                              currentLoadedState = "Fetching...";
-                              kTicker = tickerController.text;
-                              print(kTicker);
-                              await fetchTimestamps();
-                              if (kTimestamps.isEmpty) {
-                                currentLoadedState =
-                                    "Fetching timestamps failed / Check parameters";
-                                kTicker = oldTicker;
-                                TextSelection oldSelection =
-                                    tickerController.selection;
-                                tickerController.value =
-                                    tickerController.value.copyWith(
-                                  selection: oldSelection,
-                                  text: oldTicker,
-                                );
-                                kTimestamps = oldTimestamps;
-                              } else {
-                                currentLoadedState = "Load success!";
-                              }
+                                date != null ? date.year : dateTime.year,
+                                date != null ? date.month : dateTime.month,
+                                date != null ? date.day : dateTime.day,
+                                9,
+                                0,
+                                0,
+                              ).millisecondsSinceEpoch;
                               setState(() {});
                             });
                           },
@@ -503,29 +417,6 @@ class _MainScreenState extends State<MainScreen> {
                                     ? timeOfDay.minute
                                     : dateTime.minute,
                               ).millisecondsSinceEpoch;
-                              String oldTicker = kTicker;
-                              List<int> oldTimestamps = kTimestamps;
-                              currentLoadedState = "Fetching...";
-                              kTicker = tickerController.text;
-                              print(kTicker);
-                              await fetchTimestamps();
-                              if (kTimestamps.isEmpty) {
-                                print(
-                                    "Fetching timestamps failed / Check parameters");
-                                currentLoadedState =
-                                    "Fetching timestamps failed / Check parameters";
-                                kTicker = oldTicker;
-                                TextSelection oldSelection =
-                                    tickerController.selection;
-                                tickerController.value =
-                                    tickerController.value.copyWith(
-                                  selection: oldSelection,
-                                  text: oldTicker,
-                                );
-                                kTimestamps = oldTimestamps;
-                              } else {
-                                currentLoadedState = "Load success!";
-                              }
                               setState(() {});
                             });
                           },
@@ -556,25 +447,35 @@ class _MainScreenState extends State<MainScreen> {
                             onPressed: () async {
                               kIsPlaying = false;
                               timer.cancel();
-                              String oldTicker = kTicker;
-                              List<int> oldTimestamps = kTimestamps;
+                              // if (kFromTimestamp > kToTimestamp) {
+                              //   currentLoadedState =
+                              //       "From TS is larger than To TS!";
+                              //   setState(() {});
+                              //   return;
+                              // }
+                              // String oldTicker = kTicker;
+                              // List<int> oldTimestamps = kTimestamps;
                               currentLoadedState = "Fetching...";
                               kTicker = tickerController.text;
-                              print(kTicker);
                               await fetchTimestamps();
                               if (kTimestamps.isEmpty) {
                                 currentLoadedState =
                                     "Fetching timestamps failed / Check parameters";
-                                kTicker = oldTicker;
-                                TextSelection oldSelection =
-                                    tickerController.selection;
-                                tickerController.value =
-                                    tickerController.value.copyWith(
-                                  selection: oldSelection,
-                                  text: oldTicker,
-                                );
-                                kTimestamps = oldTimestamps;
+                                // kTicker = oldTicker;
+                                // kTimestamps = oldTimestamps;
+                                // // TextSelection oldSelection =
+                                // //     tickerController.selection;
+                                // // tickerController.value =
+                                // //     tickerController.value.copyWith(
+                                // //   selection: oldSelection,
+                                // //   text: oldTicker,
+                                // // );
+                                kCurrentIndex = 0;
+                                kTimestamps = [kFromTimestamp, kToTimestamp];
+                                kOrderbookModel = defaultOrderbook;
                               } else {
+                                kCurrentIndex = 0;
+                                await fetchOrderbook();
                                 currentLoadedState = "Load success!";
                               }
                               setState(() {});
