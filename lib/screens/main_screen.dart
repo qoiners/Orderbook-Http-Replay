@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:orderbook_replay_flutter/functions.dart';
 import 'package:orderbook_replay_flutter/global_variables.dart';
 import 'package:orderbook_replay_flutter/model/orderbook_model.dart';
@@ -19,7 +21,25 @@ class _MainScreenState extends State<MainScreen> {
   late final TextEditingController tickerController;
   late final TextEditingController timestampController;
   late final ScrollController scrollController;
+
+  late final TextEditingController fromTsYear;
+  late final TextEditingController fromTsMonth;
+  late final TextEditingController fromTsDay;
+  late final TextEditingController fromTsHour;
+  late final TextEditingController fromTsMinute;
+  late final TextEditingController fromTsSecond;
+  late final TextEditingController fromTsMillisecond;
+
+  late final TextEditingController toTsYear;
+  late final TextEditingController toTsMonth;
+  late final TextEditingController toTsDay;
+  late final TextEditingController toTsHour;
+  late final TextEditingController toTsMinute;
+  late final TextEditingController toTsSecond;
+  late final TextEditingController toTsMillisecond;
+
   late Timer timer;
+
   // late OrderBook orderBook;
 
   String currentLoadedState = "Not fetched yet";
@@ -57,6 +77,92 @@ class _MainScreenState extends State<MainScreen> {
         TextEditingController(text: kTimestamps[kCurrentIndex].toString());
 
     scrollController = ScrollController();
+
+    fromTsYear = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kFromTimestamp)
+          .year
+          .toString()
+          .padLeft(4, "0"),
+    );
+    fromTsMonth = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kFromTimestamp)
+          .month
+          .toString()
+          .padLeft(2, "0"),
+    );
+    fromTsDay = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kFromTimestamp)
+          .day
+          .toString()
+          .padLeft(2, "0"),
+    );
+    fromTsHour = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kFromTimestamp)
+          .hour
+          .toString()
+          .padLeft(2, "0"),
+    );
+    fromTsMinute = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kFromTimestamp)
+          .minute
+          .toString()
+          .padLeft(2, "0"),
+    );
+    fromTsSecond = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kFromTimestamp)
+          .second
+          .toString()
+          .padLeft(2, "0"),
+    );
+    fromTsMillisecond = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kFromTimestamp)
+          .millisecond
+          .toString()
+          .padLeft(3, "0"),
+    );
+
+    toTsYear = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kToTimestamp)
+          .year
+          .toString()
+          .padLeft(4, "0"),
+    );
+    toTsMonth = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kToTimestamp)
+          .month
+          .toString()
+          .padLeft(2, "0"),
+    );
+    toTsDay = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kToTimestamp)
+          .day
+          .toString()
+          .padLeft(2, "0"),
+    );
+    toTsHour = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kToTimestamp)
+          .hour
+          .toString()
+          .padLeft(2, "0"),
+    );
+    toTsMinute = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kToTimestamp)
+          .minute
+          .toString()
+          .padLeft(2, "0"),
+    );
+    toTsSecond = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kToTimestamp)
+          .second
+          .toString()
+          .padLeft(2, "0"),
+    );
+    toTsMillisecond = TextEditingController(
+      text: DateTime.fromMillisecondsSinceEpoch(kToTimestamp)
+          .millisecond
+          .toString()
+          .padLeft(3, "0"),
+    );
   }
 
   @override
@@ -200,7 +306,6 @@ class _MainScreenState extends State<MainScreen> {
                             timer.cancel();
 
                             kTicker = tickerController.text;
-                            print(kTicker);
                             await fetchOrderbook();
                             updateSums();
                             setState(() {});
@@ -290,6 +395,111 @@ class _MainScreenState extends State<MainScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        const SizedBox(width: 72, child: Text("시작시간")),
+                        SizedBox(
+                          width: 72,
+                          child: TextFormField(
+                            controller: fromTsYear,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(4),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12, child: Text("-")),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: fromTsMonth,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12, child: Text("-")),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: fromTsDay,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: fromTsHour,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8, child: Text(":")),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: fromTsMinute,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8, child: Text(":")),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: fromTsSecond,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8, child: Text(":")),
+                        SizedBox(
+                          width: 54,
+                          child: TextFormField(
+                            controller: fromTsMillisecond,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(3),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    /*
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
                         const SizedBox(width: 120, child: Text("시작시간: ")),
                         TextButton(
                           onPressed: () {
@@ -357,7 +567,113 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
+                    */
                     const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(width: 72, child: Text("종료시간")),
+                        SizedBox(
+                          width: 72,
+                          child: TextFormField(
+                            controller: toTsYear,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(4),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12, child: Text("-")),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: toTsMonth,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12, child: Text("-")),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: toTsDay,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 24),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: toTsHour,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8, child: Text(":")),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: toTsMinute,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8, child: Text(":")),
+                        SizedBox(
+                          width: 36,
+                          child: TextFormField(
+                            controller: toTsSecond,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(2),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8, child: Text(":")),
+                        SizedBox(
+                          width: 54,
+                          child: TextFormField(
+                            controller: toTsMillisecond,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 18),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(3),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    /*
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -430,6 +746,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
+                    */
                     const SizedBox(height: 12),
                     Text(currentLoadedState),
                     const SizedBox(height: 12),
@@ -447,6 +764,24 @@ class _MainScreenState extends State<MainScreen> {
                             onPressed: () async {
                               kIsPlaying = false;
                               timer.cancel();
+                              kFromTimestamp = DateTime(
+                                int.parse(fromTsYear.text),
+                                int.parse(fromTsMonth.text),
+                                int.parse(fromTsDay.text),
+                                int.parse(fromTsHour.text),
+                                int.parse(fromTsMinute.text),
+                                int.parse(fromTsSecond.text),
+                                int.parse(fromTsMillisecond.text),
+                              ).millisecondsSinceEpoch;
+                              kToTimestamp = DateTime(
+                                int.parse(toTsYear.text),
+                                int.parse(toTsMonth.text),
+                                int.parse(toTsDay.text),
+                                int.parse(toTsHour.text),
+                                int.parse(toTsMinute.text),
+                                int.parse(toTsSecond.text),
+                                int.parse(toTsMillisecond.text),
+                              ).millisecondsSinceEpoch;
                               // if (kFromTimestamp > kToTimestamp) {
                               //   currentLoadedState =
                               //       "From TS is larger than To TS!";
