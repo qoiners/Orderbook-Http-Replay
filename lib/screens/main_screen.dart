@@ -241,6 +241,7 @@ class _MainScreenState extends State<MainScreen> {
                         label: getTimeFromDateTime(
                             DateTime.fromMillisecondsSinceEpoch(
                                 kTimestamps[kCurrentIndex])),
+                        onChangeStart: (value) => timer.cancel(),
                         onChanged: (value) {
                           if (currentLoadedState == "Not fetched yet" ||
                               currentLoadedState ==
@@ -254,6 +255,17 @@ class _MainScreenState extends State<MainScreen> {
                           }
                         },
                         onChangeEnd: (value) async {
+                          if (kIsPlaying) {
+                            timer = Timer.periodic(
+                                Duration(milliseconds: kDuration), (_) async {
+                              kCurrentIndex =
+                                  (kCurrentIndex + 1) % kTimestamps.length;
+                              await fetchOrderbook();
+                              updateSums();
+
+                              setState(() {});
+                            });
+                          }
                           if (currentLoadedState == "Not fetched yet" ||
                               currentLoadedState ==
                                   "Fetching timestamps failed / Check parameters") {
@@ -811,6 +823,7 @@ class _MainScreenState extends State<MainScreen> {
                               } else {
                                 kCurrentIndex = 0;
                                 await fetchOrderbook();
+                                updateSums();
                                 currentLoadedState = "Load success!";
                               }
                               setState(() {});
