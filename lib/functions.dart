@@ -36,8 +36,6 @@ fetchHttpPost(String type, var reqBody) async {
 }
 
 fetchTimestamps() async {
-  print(
-      "FETCHING TIMESTAMPS FROM $kFromTimestamp TO $kToTimestamp OF $kTicker");
   var resBody = await fetchHttpPost('timestamps', {
     'ticker': kTicker,
     'from_timestamp': kFromTimestamp,
@@ -50,35 +48,33 @@ fetchTimestamps() async {
   } else {
     kTimestamps = [];
   }
-
-  print(kTimestamps.length);
   kCurrentIndex = 0;
   kIsPlaying = false;
 }
 
 fetchOrderbook() async {
-  print("FETCHING ORDERBOOK OF ${kTimestamps[kCurrentIndex]}");
-  var resBody = await fetchHttpPost('orderbook', {
-    'ticker': kTicker,
-    'timestamp': kTimestamps[kCurrentIndex],
-  });
-  // print(resBody);
+  if (kTimestamps.isNotEmpty) {
+    var resBody = await fetchHttpPost('orderbook', {
+      'ticker': kTicker,
+      'timestamp': kTimestamps[kCurrentIndex],
+    });
+    // print(resBody);
 
-  List<int> prices = [];
-  List<int> quantities = [];
+    List<int> prices = [];
+    List<int> quantities = [];
 
-  if (resBody['orderbook'] == null) {
-    return;
+    if (resBody['orderbook'] == null) {
+      return;
+    }
+
+    for (List<dynamic> item in resBody['orderbook']) {
+      List<int> intItem = item.cast<int>();
+      prices.add(intItem[0]);
+      quantities.add(intItem[1]);
+    }
+
+    kOrderbookModel = OrderbookModel(prices: prices, quantities: quantities);
   }
-
-  for (List<dynamic> item in resBody['orderbook']) {
-    List<int> intItem = item.cast<int>();
-    prices.add(intItem[0]);
-    quantities.add(intItem[1]);
-  }
-
-  kOrderbookModel = OrderbookModel(prices: prices, quantities: quantities);
-
   // kIsPlaying = false;
 }
 

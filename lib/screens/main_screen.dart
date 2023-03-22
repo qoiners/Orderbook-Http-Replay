@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:orderbook_replay_flutter/functions.dart';
 import 'package:orderbook_replay_flutter/global_variables.dart';
 import 'package:orderbook_replay_flutter/model/orderbook_model.dart';
@@ -199,7 +197,7 @@ class _MainScreenState extends State<MainScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 32),
                     Text(
                       '현재 시간: ${DateTime.fromMillisecondsSinceEpoch(kTimestamps[kCurrentIndex])} / ${kTimestamps[kCurrentIndex]}',
                       textAlign: TextAlign.start,
@@ -370,7 +368,6 @@ class _MainScreenState extends State<MainScreen> {
                             timer.cancel();
 
                             kTicker = tickerController.text;
-                            print(kTicker);
                             await fetchOrderbook();
                             updateSums();
                             setState(() {});
@@ -394,7 +391,6 @@ class _MainScreenState extends State<MainScreen> {
                             timer.cancel();
 
                             kTicker = tickerController.text;
-                            print(kTicker);
                             await fetchOrderbook();
                             updateSums();
                             setState(() {});
@@ -402,7 +398,81 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            kTicker = tickerController.text;
+                            await Clipboard.setData(ClipboardData(
+                                text:
+                                    "$kBaseUrl/?from_ts=${kTimestamps[kCurrentIndex] - 5000}&to_ts=${kTimestamps[kCurrentIndex] + 5000}&ticker=$kTicker"));
+                          },
+                          child: const Text("현재 시간 ± 5초"),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () async {
+                            kTicker = tickerController.text;
+                            await Clipboard.setData(ClipboardData(
+                                text:
+                                    "$kBaseUrl/?from_ts=${kTimestamps[kCurrentIndex] - 10000}&to_ts=${kTimestamps[kCurrentIndex] + 10000}&ticker=$kTicker"));
+                          },
+                          child: const Text("현재 시간 ± 10초"),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () async {
+                            kTicker = tickerController.text;
+                            await Clipboard.setData(ClipboardData(
+                                text:
+                                    "$kBaseUrl/?from_ts=${kTimestamps[kCurrentIndex] - 30000}&to_ts=${kTimestamps[kCurrentIndex] + 30000}&ticker=$kTicker"));
+                          },
+                          child: const Text("현재 시간 ± 30초"),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () async {
+                            kTicker = tickerController.text;
+                            await Clipboard.setData(ClipboardData(
+                                text:
+                                    "$kBaseUrl/?from_ts=${kTimestamps[kCurrentIndex] - 60000}&to_ts=${kTimestamps[kCurrentIndex] + 60000}&ticker=$kTicker"));
+                          },
+                          child: const Text("현재 시간 ± 1분"),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () async {
+                            kFromTimestamp = DateTime(
+                              int.parse(fromTsYear.text),
+                              int.parse(fromTsMonth.text),
+                              int.parse(fromTsDay.text),
+                              int.parse(fromTsHour.text),
+                              int.parse(fromTsMinute.text),
+                              int.parse(fromTsSecond.text),
+                              int.parse(fromTsMillisecond.text),
+                            ).millisecondsSinceEpoch;
+                            kToTimestamp = DateTime(
+                              int.parse(toTsYear.text),
+                              int.parse(toTsMonth.text),
+                              int.parse(toTsDay.text),
+                              int.parse(toTsHour.text),
+                              int.parse(toTsMinute.text),
+                              int.parse(toTsSecond.text),
+                              int.parse(toTsMillisecond.text),
+                            ).millisecondsSinceEpoch;
+                            kTicker = tickerController.text;
+                            await Clipboard.setData(ClipboardData(
+                                text:
+                                    "$kBaseUrl/?from_ts=$kFromTimestamp&to_ts=$kToTimestamp&ticker=$kTicker"));
+                          },
+                          child: const Text("전체 복사"),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -507,79 +577,6 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
-                    /*
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(width: 120, child: Text("시작시간: ")),
-                        TextButton(
-                          onPressed: () {
-                            DateTime dateTime =
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    kFromTimestamp);
-                            Future<DateTime?> selectedDate = showDatePicker(
-                              context: context,
-                              initialDate: dateTime,
-                              firstDate: DateTime(2020),
-                              lastDate: DateTime.now(),
-                            );
-
-                            selectedDate.then((date) async {
-                              kFromTimestamp = DateTime(
-                                date != null ? date.year : dateTime.year,
-                                date != null ? date.month : dateTime.month,
-                                date != null ? date.day : dateTime.day,
-                                9,
-                                0,
-                                0,
-                              ).millisecondsSinceEpoch;
-                              setState(() {});
-                            });
-                          },
-                          child: Text(
-                            getDateFromDateTime(
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    kFromTimestamp)),
-                            style: const TextStyle(
-                                color: Colors.blue, fontSize: 18),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            DateTime dateTime =
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    kFromTimestamp);
-                            Future<TimeOfDay?> selectedTime = showTimePicker(
-                                context: context,
-                                initialTime: TimeOfDay.fromDateTime(dateTime));
-
-                            selectedTime.then((timeOfDay) async {
-                              kFromTimestamp = DateTime(
-                                dateTime.year,
-                                dateTime.month,
-                                dateTime.day,
-                                timeOfDay != null
-                                    ? timeOfDay.hour
-                                    : dateTime.hour,
-                                timeOfDay != null
-                                    ? timeOfDay.minute
-                                    : dateTime.minute,
-                              ).millisecondsSinceEpoch;
-                              setState(() {});
-                            });
-                          },
-                          child: Text(
-                            getTimeFromDateTime(
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    kFromTimestamp)),
-                            style: const TextStyle(
-                                color: Colors.blue, fontSize: 18),
-                          ),
-                        ),
-                      ],
-                    ),
-                    */
                     const SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -685,80 +682,6 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
-                    /*
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(width: 120, child: Text("종료시간: ")),
-                        TextButton(
-                          onPressed: () {
-                            DateTime dateTime =
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    kToTimestamp);
-                            Future<DateTime?> selectedDate = showDatePicker(
-                              context: context,
-                              initialDate: dateTime,
-                              firstDate: DateTime.fromMillisecondsSinceEpoch(
-                                  kFromTimestamp),
-                              lastDate: DateTime.now(),
-                            );
-
-                            selectedDate.then((date) async {
-                              kToTimestamp = DateTime(
-                                date != null ? date.year : dateTime.year,
-                                date != null ? date.month : dateTime.month,
-                                date != null ? date.day : dateTime.day,
-                                9,
-                                0,
-                                0,
-                              ).millisecondsSinceEpoch;
-                              setState(() {});
-                            });
-                          },
-                          child: Text(
-                            getDateFromDateTime(
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    kToTimestamp)),
-                            style: const TextStyle(
-                                color: Colors.blue, fontSize: 18),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            DateTime dateTime =
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    kToTimestamp);
-                            Future<TimeOfDay?> selectedTime = showTimePicker(
-                                context: context,
-                                initialTime: TimeOfDay.fromDateTime(dateTime));
-
-                            selectedTime.then((timeOfDay) async {
-                              kToTimestamp = DateTime(
-                                dateTime.year,
-                                dateTime.month,
-                                dateTime.day,
-                                timeOfDay != null
-                                    ? timeOfDay.hour
-                                    : dateTime.hour,
-                                timeOfDay != null
-                                    ? timeOfDay.minute
-                                    : dateTime.minute,
-                              ).millisecondsSinceEpoch;
-                              setState(() {});
-                            });
-                          },
-                          child: Text(
-                            getTimeFromDateTime(
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    kToTimestamp)),
-                            style: const TextStyle(
-                                color: Colors.blue, fontSize: 18),
-                          ),
-                        ),
-                      ],
-                    ),
-                    */
                     const SizedBox(height: 12),
                     Text(currentLoadedState),
                     const SizedBox(height: 12),
@@ -794,29 +717,12 @@ class _MainScreenState extends State<MainScreen> {
                                 int.parse(toTsSecond.text),
                                 int.parse(toTsMillisecond.text),
                               ).millisecondsSinceEpoch;
-                              // if (kFromTimestamp > kToTimestamp) {
-                              //   currentLoadedState =
-                              //       "From TS is larger than To TS!";
-                              //   setState(() {});
-                              //   return;
-                              // }
-                              // String oldTicker = kTicker;
-                              // List<int> oldTimestamps = kTimestamps;
                               currentLoadedState = "Fetching...";
                               kTicker = tickerController.text;
                               await fetchTimestamps();
                               if (kTimestamps.isEmpty) {
                                 currentLoadedState =
                                     "Fetching timestamps failed / Check parameters";
-                                // kTicker = oldTicker;
-                                // kTimestamps = oldTimestamps;
-                                // // TextSelection oldSelection =
-                                // //     tickerController.selection;
-                                // // tickerController.value =
-                                // //     tickerController.value.copyWith(
-                                // //   selection: oldSelection,
-                                // //   text: oldTicker,
-                                // // );
                                 kCurrentIndex = 0;
                                 kTimestamps = [kFromTimestamp, kToTimestamp];
                                 kOrderbookModel = defaultOrderbook;

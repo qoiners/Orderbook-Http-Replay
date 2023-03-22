@@ -12,6 +12,7 @@ List<int> kTimestamps = [
 ];
 
 String kUrl = 'http://server1.jinhoko.com:30002';
+String kBaseUrl = 'http://server1.jinhoko.com:30001';
 
 int kMaxQuantity = 20000;
 double kBarMaxWidth = 480.0;

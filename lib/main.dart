@@ -1,7 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:orderbook_replay_flutter/screens/main_screen.dart';
 
+import 'global_variables.dart';
+
 void main() {
+  // setPathUrlStrategy();
+  String baseUrl = Uri.base.origin.toString();
+  String? paramFromTs = Uri.base.queryParameters["from_ts"];
+  String? paramToTs = Uri.base.queryParameters["to_ts"];
+  String? paramTicker = Uri.base.queryParameters["ticker"];
+
+  kBaseUrl = baseUrl;
+  if (paramFromTs != null) {
+    kFromTimestamp = int.parse(paramFromTs);
+  }
+  if (paramToTs != null) {
+    kToTimestamp = int.parse(paramToTs);
+  }
+  if (paramTicker != null) {
+    kTicker = paramTicker;
+  }
+
   runApp(const MyApp());
 }
 
